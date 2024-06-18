@@ -104,7 +104,9 @@ bfloat16_t
     if ( ! sig ) exp = 0;
     /*------------------------------------------------------------------------
     *------------------------------------------------------------------------*/
+#ifdef SOFTFLOAT_ROUND_ODD
  packReturn:
+#endif
     uiZ = packToBF16UI( sign, exp, sig );
  uiZ:
     uZ.ui = uiZ;

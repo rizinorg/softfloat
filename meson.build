@@ -1,8 +1,5 @@
 project('softfloat', ['c'],
   version: '3e',
-  default_options: [
-    'warning_level=0',
-  ],
 )
 
 softfloat_files = [

@@ -103,11 +103,12 @@ float32_t
     if ( ! sig ) exp = 0;
     /*------------------------------------------------------------------------
     *------------------------------------------------------------------------*/
+#ifdef SOFTFLOAT_ROUND_ODD
  packReturn:
+#endif
     uiZ = packToF32UI( sign, exp, sig );
  uiZ:
     uZ.ui = uiZ;
     return uZ.f;
 
 }
-
