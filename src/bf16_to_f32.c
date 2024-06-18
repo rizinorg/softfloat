@@ -4,7 +4,7 @@
 This C source file is part of the SoftFloat IEEE Floating-Point Arithmetic
 Package, Release 3e, by John R. Hauser.
 
-Copyright 2011, 2012, 2013, 2014, 2017 The Regents of the University of
+Copyright 2011, 2012, 2013, 2014, 2015 The Regents of the University of
 California.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -34,23 +34,53 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =============================================================================*/
 
+#include <stdbool.h>
 #include <stdint.h>
 #include "platform.h"
-#include "primitives.h"
+#include "internals.h"
 #include "specialize.h"
+#include "softfloat.h"
 
-/*----------------------------------------------------------------------------
-| Converts the common NaN pointed to by 'aPtr' into a 128-bit floating-point
-| NaN, and stores this NaN at the location pointed to by 'zWPtr'.  Argument
-| 'zWPtr' points to an array of four 32-bit elements that concatenate in the
-| platform's normal endian order to form a 128-bit floating-point value.
-*----------------------------------------------------------------------------*/
-void
- softfloat_commonNaNToF128M( const struct commonNaN *aPtr, uint32_t *zWPtr )
+float32_t bf16_to_f32( bfloat16_t a )
 {
+    union ui16_bf16 uA;
+    uint_fast16_t uiA;
+    bool sign;
+    int_fast16_t exp;
+    uint_fast16_t frac;
+    struct commonNaN commonNaN;
+    uint_fast32_t uiZ;
+    union ui32_f32 uZ;
 
-    softfloat_shortShiftRight128M( (const uint32_t *) &aPtr->v0, 16, zWPtr );
-    zWPtr[indexWordHi( 4 )] |= (uint32_t) aPtr->sign<<31 | 0x7FFF8000;
+    /*------------------------------------------------------------------------
+    *------------------------------------------------------------------------*/
+    uA.f = a;
+    uiA = uA.ui;
+    sign = signBF16UI( uiA );
+    exp  = expBF16UI( uiA );
+    frac = fracBF16UI( uiA );
+    /*------------------------------------------------------------------------
+    *------------------------------------------------------------------------*/
+    // NaN or Inf
+    if ( exp == 0xFF ) {
+        if ( frac ) {
+            softfloat_bf16UIToCommonNaN( uiA, &commonNaN );
+            uiZ = softfloat_commonNaNToF32UI( &commonNaN );
+        } else {
+            uiZ = packToF32UI( sign, 0xFF, 0 );
+        }
+        goto uiZ;
+    }
+    /*------------------------------------------------------------------------
+    *------------------------------------------------------------------------*/
+    // packToF32UI simply packs bitfields without any numerical change
+    // which means it can be used directly for any BF16 to f32 conversions which
+    // does not require bits manipulation
+    // (that is everything where the 16-bit are just padded right with 16 zeros, including
+    //  subnormal numbers)
+    uiZ = packToF32UI( sign, exp, ((uint_fast32_t) frac) <<16 );
+ uiZ:
+    uZ.ui = uiZ;
+    return uZ.f;
 
 }
-

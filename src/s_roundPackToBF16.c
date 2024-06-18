@@ -111,4 +111,3 @@ bfloat16_t
     return uZ.f;
 
 }
-

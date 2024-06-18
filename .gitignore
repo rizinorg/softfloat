@@ -1,2 +1,4 @@
-build/*/*.o
-build/*/*.a
+build/
+.cache/
+.vscode/
+

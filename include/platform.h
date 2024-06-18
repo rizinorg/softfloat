@@ -1,11 +1,11 @@
 
 /*============================================================================
 
-This C source file is part of the SoftFloat IEEE Floating-Point Arithmetic
+This C header file is part of the SoftFloat IEEE Floating-Point Arithmetic
 Package, Release 3e, by John R. Hauser.
 
-Copyright 2011, 2012, 2013, 2014, 2015, 2017 The Regents of the University of
-California.  All rights reserved.
+Copyright 2011, 2012, 2013, 2014, 2015, 2016, 2017 The Regents of the
+University of California.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -34,23 +34,27 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =============================================================================*/
 
-#include "platform.h"
-#include "primitiveTypes.h"
+/*----------------------------------------------------------------------------
+*----------------------------------------------------------------------------*/
+#define LITTLEENDIAN          1
 
-#define softfloat_commonNaNToF128UI softfloat_commonNaNToF128UI
-#include "specialize.h"
+/* SOFTFLOAT_FAST_INT64: (as sourced from http://www.jhauser.us/arithmetic/SoftFloat-3/doc/SoftFloat-source.html)
+ * Can be defined to indicate that the build target's implementation of 64-bit
+ * arithmetic is efficient. For newer 64-bit processors, this macro should
+ * usually be defined. For very small microprocessors whose buses and registers
+ * are 8-bit or 16-bit in size, this macro should usually not be defined. Whether
+ * this macro should be defined for a 32-bit processor may depend on the target
+ * machine and the applications that will use SoftFloat. */
+#define SOFTFLOAT_FAST_INT64  1
+/* For Rizin, we assume that the only architectures we'll be running on will have
+ * a 64-bit integer. The fast part is not too relevant either, since we don't
+ * care too much about efficiency when running on fringe architectures.
+ */
 
 /*----------------------------------------------------------------------------
-| Converts the common NaN pointed to by 'aPtr' into a 128-bit floating-point
-| NaN, and returns the bit pattern of this value as an unsigned integer.
 *----------------------------------------------------------------------------*/
-struct uint128 softfloat_commonNaNToF128UI( const struct commonNaN *aPtr )
-{
-    struct uint128 uiZ;
-
-    uiZ.v64 = defaultNaNF128UI64;
-    uiZ.v0  = defaultNaNF128UI0;
-    return uiZ;
-
-}
-
+#ifdef __GNUC_STDC_INLINE__
+#define INLINE inline
+#else
+#define INLINE extern inline
+#endif
