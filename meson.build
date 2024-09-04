@@ -265,15 +265,29 @@ softfloat_files = [
 
 softfloat_inc = [include_directories('include')]
 
-librzsoftfloat = library('softfloat', softfloat_files,
+softfloat_libname = 'softfloat'
+if get_option('cross_native')
+  # librzutils is used for building sdb files natively
+  # and requires this ugly hack
+  softfloat_libname = 'softfloat_cross_native'
+endif
+
+softfloat = library(softfloat_libname, softfloat_files,
   include_directories: softfloat_inc,
   implicit_include_directories: false,
   install: false,
+  native: get_option('cross_native'),
 )
 
 softfloat_dep = declare_dependency(
-  link_with: librzsoftfloat,
+  link_with: softfloat,
   include_directories: softfloat_inc,
 )
 
-meson.override_dependency('softfloat', softfloat_dep)
+if get_option('cross_native')
+  # librzutils is used for building sdb files natively
+  # and requires this ugly hack
+  meson.override_dependency('softfloat_cross_native', softfloat_dep)
+else
+  meson.override_dependency('softfloat', softfloat_dep)
+endif
